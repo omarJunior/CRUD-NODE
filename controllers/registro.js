@@ -1,5 +1,6 @@
 const { response } = require("express");
 const dbConnect = require("../bd/config");
+const bcryptjs = require("bcryptjs");
 
 const getRegistro = async(req, res = response)=>{
     await dbConnect.query("SELECT * FROM employees", function(err, data){
@@ -15,26 +16,55 @@ const getRegistro = async(req, res = response)=>{
 }
 
 const insertarRegistros = async(req, res = response)=>{
+    const { first_name, last_name, email, password, phone, organization, designation, salary, status, created_at } = req.body;
     try{
-        await dbConnect.query("INSERT INTO employees set ?", [req.body], function(err, data){
+        await dbConnect.query("SELECT * FROM employees WHERE email=? ", email, async function(err, data){
             if(err){
                 throw new Error(err);
             }else{
-                if(data.affectedRows > 0){
-                    res.status(200).json({
-                        msg: "Datos creados",
-                        datos : req.body
+                if(data.length > 0){
+                    return res.status(400).json({
+                        msg: "No puede crear el usuario con un email que ya existe"
                     })
                 }
-            }
-        });
+                const salt = bcryptjs.genSaltSync();
+                let passwordEncriptada = bcryptjs.hashSync(password, salt);
+                const insertEmploye = {
+                    first_name, 
+                    last_name, 
+                    email, 
+                    password : passwordEncriptada, 
+                    phone, 
+                    organization, 
+                    designation, 
+                    salary, 
+                    status, 
+                    created_at
+                }
+                await dbConnect.query("INSERT INTO employees set ?", [insertEmploye], function(err, data){
+                    if(err){
+                        throw new Error(err);
+                    }else{
+                        if(data.affectedRows > 0){
+                            res.status(200).json({
+                                msg: "Datos creados",
+                                insertEmploye
+                            })
+                        }
+                    }
+                });
     
+    
+                }   //end else
+            })
+
     }catch(e){
         console.log(e);
-        res.status(400).json({
-            msg : "Ha ocurrido un error"
+        res.status(500).json({
+            msg: "Habla con el administrador, ha ocurrido un error"
         })
     }
+    
     
 }   
 
