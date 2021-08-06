@@ -20,11 +20,12 @@ const insertarRegistros = async(req, res = response)=>{
             if(err){
                 throw new Error(err);
             }else{
-                const datos = data.values[0];
-                res.status(200).json({
-                    msg: "Datos creados",
-                    datos
-                })
+                if(data.affectedRows > 0){
+                    res.status(200).json({
+                        msg: "Datos creados",
+                        datos : req.body
+                    })
+                }
             }
         });
     
@@ -73,10 +74,16 @@ const actualizarDatos = async(req, res = response)=>{
             if(err){
                 throw new Error(err);
             }else{
-                res.status(200).json({
-                    msg: "Datos actualizados correctamente",
-                    newUpdate
+                if(data.affectedRows > 0){
+                    return res.status(200).json({
+                        msg: "Datos actualizados correctamente",
+                        newUpdate
+                    })
+                }
+                res.status(400).json({
+                    msg : "No hay datos con ese id: " + id
                 })
+                
             }
         });
     } catch (error) {
@@ -94,11 +101,11 @@ const deleteUsuarios = async(req, res = response)=>{
                 throw new Error(err);
             }else{
                 if(data.affectedRows === 0){
-                    res.json({
+                    return res.json({
                         msg : `No hay datos con el Id ${id}`
                     });
                 }else{
-                    res.status(200).json({
+                    return res.status(200).json({
                         msg : "Registro borrado de la base de datos"
                     });
                 }

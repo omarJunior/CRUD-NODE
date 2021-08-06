@@ -12,7 +12,8 @@ class Server{
         this.port = process.env.PORT;
 
         this.paths = { //Rutas
-            registro: '/api/registro'
+            registro: '/api/registro',
+            auth: '/api/auth'
         }
 
          // Conectar a base de datos
@@ -47,6 +48,7 @@ class Server{
 
     routes(){
         this.app.use(this.paths.registro, require("../routes/registro"));
+        this.app.use(this.paths.auth, require("../routes/auth"));
     }
 
     listen(){
